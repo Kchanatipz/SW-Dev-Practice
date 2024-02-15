@@ -15,7 +15,11 @@ exports.register = async(req,res,next) => {
             password,
             role
         });
-        res.status(200).json({success: true});
+        
+        // Create (JWT) token
+        const token = user.getSignedJWTToken();
+
+        res.status(200).json({success: true,token});
     } catch(err) {
         res.status(400).json({success: false});
         console.log(err.stack);
