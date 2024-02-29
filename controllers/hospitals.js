@@ -1,5 +1,6 @@
 const { json } = require('express');
 const Hospital = require('../models/Hospital');
+const { parse } = require('dotenv');
 
 // desc     Get all hospitals
 // route    GET /api/v1/hospitals
@@ -10,8 +11,8 @@ exports.getHospitals =  async (req,res,next) => {
     // copy req.query into array of key and value -> { select: 'name,province,...', sort: 'name' }
     const reqQuery = {...req.query};
 
-    // loop over array to remove them from reqQuery
-    ['select','sort'].forEach(param => delete reqQuery[param]);
+    // loop over array to remove remove fields from reqQuery
+    ['select','sort','page','limit'].forEach(param => delete reqQuery[param]);
     console.log(reqQuery);
     
     // create request string and operators (lt lte gt gte in) using regular expressions
@@ -34,11 +35,33 @@ exports.getHospitals =  async (req,res,next) => {
         query = query.sort('-createdAt');
     }
 
+    // pagination
+    const page = parseInt(req.query.page,10) || 1;
+    const limit = parseInt(req.query.limit,10) || 25;
+    const startIndex = (page-1)*limit;
+    const endIndex = page*limit;
+
     try {
+        const total = await Hospital.countDocuments();
+        query = query.skip(startIndex).limit(limit);
+
+        // execute query
         const hospitals = await query;
+
+        // pagination result
+        const pagination = {};
+
+        if (endIndex < total) {
+            pagination.next = {page: page+1, limit};
+        }
+        if (startIndex > 0) {
+            pagination.prev = {page: page-1, limit};
+        }
+
         res.status(200).json({
             success: true,
             count: hospitals.length,
+            pagination,
             data: hospitals
         });
     } catch(err) {
