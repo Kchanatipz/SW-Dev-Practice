@@ -5,10 +5,37 @@ const Hospital = require('../models/Hospital');
 // route    GET /api/v1/hospitals
 // access   Public
 exports.getHospitals =  async (req,res,next) => {
-    // res.status(200).json({success:true, msg:'Create new hospitals'});
+    let query;
+
+    // copy req.query into array of key and value -> { select: 'name,province,...', sort: 'name' }
+    const reqQuery = {...req.query};
+
+    // loop over array to remove them from reqQuery
+    ['select','sort'].forEach(param => delete reqQuery[param]);
+    console.log(reqQuery);
+    
+    // create request string and operators (lt lte gt gte in) using regular expressions
+    let queryStr = JSON.stringify(req.query);
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+
+    query = Hospital.find(JSON.parse(queryStr));
+
+    // select
+    if (req.query.select) {
+        const fields = req.query.select.split(',').join(' ');
+        query = query.select(fields);
+    }
+
+    // sort 
+    if (req.query.sort) {
+        const sortBy = req.query.sort.split(',').join(' ');
+        query = query.sort(sortBy);
+    } else {
+        query = query.sort('-createdAt');
+    }
+
     try {
-        const hospitals = await Hospital.find();
-        
+        const hospitals = await query;
         res.status(200).json({
             success: true,
             count: hospitals.length,
