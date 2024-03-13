@@ -1,4 +1,5 @@
 const Appointment = require('../models/Appointment');
+const { estimatedDocumentCount } = require('../models/Hospital');
 
 // desc     Get all appointments
     // normal user  -> only see their appointment
@@ -39,6 +40,36 @@ exports.getAppointments = async (req,res,next) => {
     } catch(err) {
         console.log(err.stack);
         res.status(500).json({
+            success : false,
+            msg : "Can't find the appointment"
+        });
+    }
+}
+
+// desc     Get single appointment
+// route    GET /api/v1/appointment/:id
+// access   Public
+exports.getAppointment = async (req,res,next) => {
+    try {
+        const appointment = await Appointment.findById(req.params.id).populate({
+            path : 'hospital',
+            select : 'name description tel'
+        });
+
+        if (!appointment) {
+            return res.status(404).json({
+                success : false,
+                msg : `No apppointment with the id of ${req.params.id}`
+            });
+        }
+
+        res.status(200).json({
+            success : true,
+            data : appointment
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(500).json({
             success : false,
             msg : "Can't find the appointment"
         });
