@@ -13,13 +13,12 @@ exports.getHospitals =  async (req,res,next) => {
 
     // loop over array to remove remove fields from reqQuery
     ['select','sort','page','limit'].forEach(param => delete reqQuery[param]);
-    console.log(reqQuery);
     
     // create request string and operators (lt lte gt gte in) using regular expressions
     let queryStr = JSON.stringify(req.query);
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
 
-    query = Hospital.find(JSON.parse(queryStr));
+    query = Hospital.find(JSON.parse(queryStr)).populate('appointments');
 
     // select
     if (req.query.select) {
