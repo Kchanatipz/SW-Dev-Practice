@@ -1,6 +1,5 @@
 const Appointment = require('../models/Appointment');
 const Hospital = require('../models/Hospital');
-const { estimatedDocumentCount } = require('../models/Hospital');
 
 // desc     Get all appointments
     // normal user  -> only see their appointment
