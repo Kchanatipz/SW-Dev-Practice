@@ -134,12 +134,13 @@ exports.updateHospital = async (req,res,next) => {
 exports.deleteHospital = async (req,res,next) => {
     // res.status(200).json({success:true, msg:`Delete hospital ${req.params.id}`});
     try {
-        const hospital = await Hospital.findByIdAndDelete(req.params.id);
+        const hospital = await Hospital.findById(req.params.id);
 
         if (!hospital) {
             return res.status(400).json({succes: false});
         }
 
+        await hospital.deleteOne();
         res.status(200).json({success: true, data: {} });
     } catch {
         res.status(400).json({success: false});
