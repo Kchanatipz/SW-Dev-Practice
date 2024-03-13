@@ -1,4 +1,5 @@
 const Appointment = require('../models/Appointment');
+const Hospital = require('../models/Hospital');
 const { estimatedDocumentCount } = require('../models/Hospital');
 
 // desc     Get all appointments
@@ -72,6 +73,38 @@ exports.getAppointment = async (req,res,next) => {
         return res.status(500).json({
             success : false,
             msg : "Can't find the appointment"
+        });
+    }
+}
+
+// desc     Add appointment
+// route    POST /api/v1/hospitals/:hospitalId/appointment
+// access   Private
+exports.addAppointment = async (req,res,next) => {
+    try {
+        console.log(req.params.hospitalId);
+        req.body.hospital = req.params.hospitalId;
+
+        const hospital = await Hospital.findById(req.params.hospitalId);
+
+        if (!hospital) {
+            return res.status(404).json({
+                success : false,
+                msg : `No hospital with the id of ${req.params.hospitalId}`
+            });
+        }
+
+        const apppointment = await Appointment.create(req.body);
+
+        res.status(200).json({
+            success : true,
+            data : apppointment
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(500).json({
+            success : false,
+            msg : "Can't create appointment"
         });
     }
 }

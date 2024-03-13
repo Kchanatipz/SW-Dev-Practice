@@ -5,7 +5,7 @@ const {protect,authorize} = require('../middleware/auth');
 const appointmentRouter = require('./appointments');
 
 // re-route into other resource routers
-router.use('/:idhospitalId/appointments/',appointmentRouter);
+router.use('/:hospitalId/appointments/',appointmentRouter);
 
 router.route('/').get(getHospitals).post(protect, authorize('admin'), createHospital);
 router.route('/:id').get(getHospital);
