@@ -16,7 +16,7 @@ exports.getAppointments = async (req,res,next) => {
         });
     } else {
         if (req.params.hospitalId) {
-            console.log(req.params.hospitalId);
+            // console.log(req.params.hospitalId);
             query = Appointment.find({hospital: req.params.hospitalId}).populate({
                 path : 'hospital',
                 select : 'name province tel'
@@ -38,7 +38,7 @@ exports.getAppointments = async (req,res,next) => {
             data : appointments
         });
     } catch(err) {
-        console.log(err.stack);
+        console.log(err);
         res.status(500).json({
             success : false,
             msg : "Can't find the appointment"
@@ -59,7 +59,7 @@ exports.getAppointment = async (req,res,next) => {
         if (!appointment) {
             return res.status(404).json({
                 success : false,
-                msg : `No apppointment with the id of ${req.params.id}`
+                msg : `No apppointment ${req.params.id}`
             });
         }
 
@@ -81,15 +81,27 @@ exports.getAppointment = async (req,res,next) => {
 // access   Private
 exports.addAppointment = async (req,res,next) => {
     try {
-        console.log(req.params.hospitalId);
+        // console.log(req.params.hospitalId);
+        // add hospitalId, logged-in userId to req.body
         req.body.hospital = req.params.hospitalId;
+        req.body.user = req.user.id;
 
+        // check for existed hospital & existed appointment
         const hospital = await Hospital.findById(req.params.hospitalId);
+        const existedAppointment = await Appointment.find({user: req.user.id});
+
+        // if the user is't admin, he can create only 3 appointments
+        if (existedAppointment.length >= 3 && req.user.id !== 'admin') {
+            return res.status(400).json({
+                success : false,
+                msg : `User ${req.user.id} already has 3 appointments`
+            });
+        }
 
         if (!hospital) {
             return res.status(404).json({
                 success : false,
-                msg : `No hospital with the id of ${req.params.hospitalId}`
+                msg : `No hospital ${req.params.hospitalId}`
             });
         }
 
@@ -112,15 +124,23 @@ exports.addAppointment = async (req,res,next) => {
 // route    PUT /api/v1/appointments/:id
 // access   Private
 exports.updateAppointment = async (req,res,next) => {
-    console.log(req.params.id);
-    console.log(req.body);
+    // console.log(req.params.id);
+    // console.log(req.body);
     try {
         let appointment = await Appointment.findById(req.params.id);
 
         if (!appointment) {
             return res.status(404).json({
                 success : false,
-                msg : `No appointment with the id of ${req.params.id}`
+                msg : `No appointment ${req.params.id}`
+            });
+        }
+
+        // verify whether logged-in user is the appointment owner
+        if (req.user.role !== 'admin' && appointment.user.toString() !== req.user.id) {
+            return res.status(401).json({
+                success : false,
+                msg : `User ${req.user.id} isn't authorized to update this appointment`
             });
         }
 
@@ -155,11 +175,19 @@ exports.deleteAppointment = async (req,res,next) => {
         if (!appointment) {
             return res.status(404).json({
                 success : false,
-                msg : `No appointment with the id of ${req.params.id}`
+                msg : `No appointment ${req.params.id}`
             });
         }
+        
+        // verify whether logged-in user is the appointment owner
+        if (req.user.role !== 'admin' && appointment.user.toString() !== req.user.id) {
+            return res.status(401).json({
+                success : false,
+                msg : `User ${req.user.id} isn't authorized to delete this appointment`
+            });       
+        }
 
-        await appointment.remove();
+        await appointment.deleteOne();
 
         res.status(200).json({
             success : true,
