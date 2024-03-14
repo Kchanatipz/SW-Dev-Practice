@@ -12,19 +12,28 @@ exports.getAppointments = async (req,res,next) => {
     if (req.user.role !== 'admin') {
         query = Appointment.find({user : req.user.id}).populate({
             path : 'hospital',
-            select : 'name province tel'
+            select : 'name province'
+        }).populate({
+            path : 'user',
+            select : 'name role'
         });
     } else {
         if (req.params.hospitalId) {
             // console.log(req.params.hospitalId);
             query = Appointment.find({hospital: req.params.hospitalId}).populate({
                 path : 'hospital',
-                select : 'name province tel'
+                select : 'name province'
+            }).populate({
+                path : 'user',
+                select : 'name role'
             });
         } else {
         query = Appointment.find().populate({
             path : 'hospital',
-            select : 'name province tel'
+            select : 'name province'
+        }).populate({
+            path : 'user',
+            select : 'name role'
         });
         }
     }
@@ -53,7 +62,10 @@ exports.getAppointment = async (req,res,next) => {
     try {
         const appointment = await Appointment.findById(req.params.id).populate({
             path : 'hospital',
-            select : 'name description tel'
+            select : 'name description'
+        }).populate({
+            path : 'user',
+            select : 'name role'
         });
 
         if (!appointment) {
@@ -85,6 +97,7 @@ exports.addAppointment = async (req,res,next) => {
         // add hospitalId, logged-in userId to req.body
         req.body.hospital = req.params.hospitalId;
         req.body.user = req.user.id;
+        console.log(req.user);
 
         // check for existed hospital & existed appointment
         const hospital = await Hospital.findById(req.params.hospitalId);
@@ -149,7 +162,10 @@ exports.updateAppointment = async (req,res,next) => {
             runValidators : true
         }).populate({
             path : 'hospital',
-            select : 'name description tel'
+            select : 'name description'
+        }).populate({
+            path : 'user',
+            select : 'name role'
         });
 
         res.status(200).json({
