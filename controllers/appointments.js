@@ -107,3 +107,69 @@ exports.addAppointment = async (req,res,next) => {
         });
     }
 }
+
+// desc     Update appointment
+// route    PUT /api/v1/appointments/:id
+// access   Private
+exports.updateAppointment = async (req,res,next) => {
+    console.log(req.params.id);
+    console.log(req.body);
+    try {
+        let appointment = await Appointment.findById(req.params.id);
+
+        if (!appointment) {
+            return res.status(404).json({
+                success : false,
+                msg : `No appointment with the id of ${req.params.id}`
+            });
+        }
+
+        appointment = await Appointment.findByIdAndUpdate(req.params.id, req.body, {
+            new : true,
+            runValidators : true
+        }).populate({
+            path : 'hospital',
+            select : 'name description tel'
+        });
+
+        res.status(200).json({
+            success : true,
+            data : appointment
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(500).json({
+            success : false,
+            msg : "Can't update the apppointment"
+        });
+    }
+};
+
+// desc     Delete appointment
+// route    DELETE /api/v1/appointments/:id
+// access   Private
+exports.deleteAppointment = async (req,res,next) => {
+    try {
+        const appointment = await Appointment.findById(req.params.id);
+
+        if (!appointment) {
+            return res.status(404).json({
+                success : false,
+                msg : `No appointment with the id of ${req.params.id}`
+            });
+        }
+
+        await appointment.remove();
+
+        res.status(200).json({
+            success : true,
+            data : {}
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(500).json({
+            success : false,
+            msg : "Can't delete the appointment"
+        });
+    }
+};
