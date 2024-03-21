@@ -1,6 +1,7 @@
 const { json } = require('express');
 const Hospital = require('../models/Hospital');
 const { parse } = require('dotenv');
+const VacCenter = require('../models/VacCenter');
 
 // desc     Get all hospitals
 // route    GET /api/v1/hospitals
@@ -146,3 +147,16 @@ exports.deleteHospital = async (req,res,next) => {
         res.status(400).json({success: false});
     }
 }
+
+// desc     Get vaccine centers
+// route    GET /api/v1/hospitals/vacCenters/
+// access   Public
+exports.getVacCenters = (req,res,next) => {
+    VacCenter.getAll((err,data) => {
+        if (err) {
+            res.status(500).send({
+                msg : err.msg || "Some error occured while retrieving Vaccine Centers"
+            });
+        } else res.send(data);
+    });
+};
