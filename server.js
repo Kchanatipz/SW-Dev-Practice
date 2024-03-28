@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 
 // Load env vars
 dotenv.config({ path: "./config/config.env" });
@@ -14,6 +15,8 @@ const hospitals = require("./routes/hospitals");
 const auth = require("./routes/auth");
 const appointments = require("./routes/appointments");
 const app = express();
+
+app.use(cors());
 
 // Mount routers
 app.use(express.json());

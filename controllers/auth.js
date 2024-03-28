@@ -32,12 +32,10 @@ exports.login = async (req, res, next) => {
   // Check empty email or password
   if (!email || !password) {
     if (!email && !password)
-      return res
-        .status(400)
-        .json({
-          success: false,
-          msg: "Please provide an email and a password",
-        });
+      return res.status(400).json({
+        success: false,
+        msg: "Please provide an email and a password",
+      });
     else if (!email)
       return res
         .status(400)
@@ -79,10 +77,16 @@ const sendTokenResponse = (user, statusCode, res) => {
   if (process.env.NODE_ENV == "production") {
     options.secure = true;
   }
-  res.status(statusCode).cookie("token", token, options).json({
-    success: true,
-    token,
-  });
+  res
+    .status(statusCode) /*.cookie("token", token, options)*/
+    .json({
+      success: true,
+      token,
+      //add for frontend
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+    });
 };
 
 // desc     Get current logged-in user
