@@ -6,6 +6,7 @@ const user = localStorage.getItem("user");
 
 const initialState = {
   user: user ? user : null,
+  //user: null,
   isError: false,
   isSuccess: false,
   isLoading: false,
@@ -19,34 +20,32 @@ export const register = createAsyncThunk(
     console.log(user);
     try {
       return await authService.register(user);
-    } catch (err) {
+    } catch (error) {
       const message =
-        (err.response && err.response.data && err.response.data.message) ||
-        err.message ||
-        err.toString();
-
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
       return thunkAPI.rejectWithValue(message);
     }
   }
 );
 
-// Login User
+// Login user
 export const login = createAsyncThunk("auth/login", async (user, thunkAPI) => {
-  createAsyncThunk("auth/login", async (user, thunkAPI) => {
-    try {
-      return await authService.login(user);
-    } catch (err) {
-      const message =
-        (err.response && err.response.data && err.response.data.message) ||
-        err.message ||
-        err.toString();
-
-      return thunkAPI.rejectWithValue(message);
-    }
-  });
+  try {
+    return await authService.login(user);
+  } catch (error) {
+    const message =
+      (error.response && error.response.data && error.response.data.message) ||
+      error.message ||
+      error.toString();
+    return thunkAPI.rejectWithValue(message);
+  }
 });
 
-// Logout User
+// Logout user
 export const logout = createAsyncThunk("auth/logout", async () => {
   await authService.logout();
 });
