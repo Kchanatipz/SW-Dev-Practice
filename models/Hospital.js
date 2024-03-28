@@ -1,55 +1,62 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const HospitalSchema = new mongoose.Schema({
-    name : {
-        type : String,
-        required : [true,'Please add a name'],
-        unique : true,
-        trim : true,
-        maxlength : [50, 'Name must not exceed 50 characters']
+const HospitalSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Please add a name"],
+      unique: true,
+      trim: true,
+      maxlength: [50, "Name must not exceed 50 characters"],
     },
-    address : {
-        type : String,
-        required : [true, 'Please add an address']
+    address: {
+      type: String,
+      required: [true, "Please add an address"],
     },
-    district : {
-        type : String,
-        required : [true, 'Please add a district']
+    district: {
+      type: String,
+      required: [true, "Please add a district"],
     },
-    province : {
-        type : String,
-        required : [true, 'Please add a province']
+    province: {
+      type: String,
+      required: [true, "Please add a province"],
     },
-    postalcode : {
-        type : String,
-        required : [true, 'Please add a postal code'],
-        maxlength : [5, 'Postal code must not exceed 5 digits']
+    postalcode: {
+      type: String,
+      required: [true, "Please add a postal code"],
+      maxlength: [5, "Postal code must not exceed 5 digits"],
     },
-    tel : {
-        type : String,
+    tel: {
+      type: String,
     },
-    region : {
-        type : String,
-        required : [true, 'Please add a region']
-    }
-}, {
-    toJSON : {virtuals : true},
-    toObject : {virtuals : true}
-});
+    region: {
+      type: String,
+      required: [true, "Please add a region"],
+    },
+  },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
 
 // reverse popoulate with virtuals
-HospitalSchema.virtual('appointments', {
-    ref : 'Appointment',
-    localField : '_id',
-    foreignField : 'hospital',
-    justOne : false
+HospitalSchema.virtual("appointments", {
+  ref: "Appointment",
+  localField: "_id",
+  foreignField: "hospital",
+  justOne: false,
 });
 
 // cascade delete appointments when a hospital is deleted
-HospitalSchema.pre('deleteOne', {document: true, query: false}, async function(next) {
+HospitalSchema.pre(
+  "deleteOne",
+  { document: true, query: false },
+  async function (next) {
     console.log(`Appointments being removed from ${this._id}`);
-    await this.model('Appointment').deleteMany({hospital: this._id});
+    await this.model("Appointment").deleteMany({ hospital: this._id });
     next();
-});
+  }
+);
 
-module.exports = mongoose.model('Hospital', HospitalSchema);
+module.exports = mongoose.model("Hospital", HospitalSchema);
