@@ -6,6 +6,7 @@ const cors = require("cors");
 const mongoSanitize = require("express-mongo-sanitize");
 const helmet = require("helmet");
 const { xss } = require("express-xss-sanitizer");
+const rateLimit = require("express-rate-limit");
 
 // Load env vars
 dotenv.config({ path: "./config/config.env" });
@@ -32,6 +33,13 @@ app.use(helmet());
 
 // Use xss (prevent xss attacks)
 app.use(xss());
+
+// Rate limiting (limit 100 requests within 10 minutes)
+const limiter = rateLimit({
+  windowsMs: 10 * 60 * 1000,
+  max: 100,
+});
+app.use(limiter);
 
 // Mount routers
 app.use("/api/v1/hospitals", hospitals);
